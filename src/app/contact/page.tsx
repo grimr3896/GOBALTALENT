@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Phone, MapPin, ShieldCheck, Clock, MessageSquare, Loader2 } from 'lucide-react';
+import { Mail, MapPin, ShieldCheck, Clock, MessageSquare, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ContactPage() {
@@ -83,16 +83,6 @@ export default function ContactPage() {
                     <div>
                       <p className="text-[10px] font-bold text-secondary uppercase mb-1">Office Address</p>
                       <p className="text-sm text-gray-600">1245 Global Plaza, District 5, London, SE1 7PB, United Kingdom</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 bg-primary/5 flex items-center justify-center text-primary shrink-0 border border-primary/10">
-                      <Phone className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-secondary uppercase mb-1">Telephone</p>
-                      <p className="text-sm text-gray-600">+44 20 7946 0958 (Admin)</p>
-                      <p className="text-sm text-gray-600">+44 20 7946 0959 (Visa Help)</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
