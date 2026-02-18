@@ -1,3 +1,4 @@
+
 import { ShieldCheck, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,7 +30,7 @@ export default function Footer() {
           <h4 className="font-headline text-lg mb-6 border-b border-secondary/30 pb-2">Contact Details</h4>
           <ul className="space-y-4 text-sm">
             <li className="flex gap-3"><MapPin className="w-4 h-4 text-secondary shrink-0" /> 1245 Global Plaza, District 5, London, UK</li>
-            <li className="flex gap-3"><Mail className="w-4 h-4 text-secondary shrink-0" /> info@globaltalent.gov</li>
+            <li className="flex gap-3"><Mail className="w-4 h-4 text-secondary shrink-0" /> globalcareers0@gmail.com</li>
           </ul>
         </div>
 
@@ -49,7 +50,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-white/10 text-center">
         <p className="text-xs text-gray-500 mb-4">
-          Disclaimer: We are a licensed international recruitment agency. We do not charge job seekers for placement. Report fraud to fraud@globaltalent.gov
+          Disclaimer: We are a licensed international recruitment agency. We do not charge job seekers for placement. Report fraud to globalcareers0@gmail.com
         </p>
         <div className="flex justify-center gap-6 text-xs text-gray-400">
           <Link href="#">Privacy Policy</Link>

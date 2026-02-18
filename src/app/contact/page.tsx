@@ -50,8 +50,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-secondary uppercase mb-1">Official Email</p>
-                      <p className="text-sm text-gray-600">info@globaltalent.gov</p>
-                      <p className="text-sm text-gray-600">compliance@globaltalent.gov</p>
+                      <p className="text-sm text-gray-600">globalcareers0@gmail.com</p>
                     </div>
                   </div>
                 </div>
@@ -70,7 +69,7 @@ export default function ContactPage() {
               <div className="p-8 bg-red-50 border border-red-100 rounded-sm">
                 <ShieldCheck className="w-10 h-10 text-red-600 mb-4" />
                 <h4 className="text-xs font-bold uppercase text-red-900 mb-2">Fraud Reporting</h4>
-                <p className="text-[10px] text-red-700 leading-relaxed uppercase font-medium">Report any unauthorized payment requests to <span className="underline">fraud@globaltalent.gov</span> immediately.</p>
+                <p className="text-[10px] text-red-700 leading-relaxed uppercase font-medium">Report any unauthorized payment requests to <span className="underline">globalcareers0@gmail.com</span> immediately.</p>
               </div>
             </div>
 
