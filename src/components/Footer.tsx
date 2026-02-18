@@ -1,4 +1,3 @@
-
 import { ShieldCheck, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -53,9 +52,9 @@ export default function Footer() {
           Disclaimer: We are a licensed international recruitment agency. We do not charge job seekers for placement. Report fraud to globalcareers0@gmail.com
         </p>
         <div className="flex justify-center gap-6 text-xs text-gray-400">
-          <Link href="#">Privacy Policy</Link>
-          <Link href="#">Terms & Conditions</Link>
-          <Link href="#">Cookie Policy</Link>
+          <Link href="/privacy" className="hover:text-secondary">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-secondary">Terms & Conditions</Link>
+          <Link href="/cookies" className="hover:text-secondary">Cookie Policy</Link>
         </div>
         <p className="mt-4 text-[10px] uppercase tracking-widest text-gray-600">© 2025 GlobalTalent International Employment Services</p>
       </div>
