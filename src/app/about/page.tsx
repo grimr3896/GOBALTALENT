@@ -27,7 +27,7 @@ export default function AboutPage() {
                 data-ai-hint="business office"
               />
               <div className="absolute -bottom-8 -right-8 bg-secondary p-8 text-primary hidden md:block">
-                <p className="text-4xl font-bold font-headline">15+</p>
+                <p className="text-4xl font-bold font-headline">5+</p>
                 <p className="text-[10px] font-bold uppercase tracking-widest">Years of Excellence</p>
               </div>
             </div>
