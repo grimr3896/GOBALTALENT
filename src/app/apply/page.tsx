@@ -14,10 +14,8 @@ import {
   FileUp, 
   CheckSquare, 
   Loader2, 
-  HelpCircle, 
   FileText, 
   Trash2, 
-  AlertCircle, 
   UploadCloud,
   CheckCircle2,
   Info,
@@ -26,7 +24,6 @@ import {
 import { COUNTRIES, CATEGORIES, CATEGORY_ROLES, MOCK_JOBS } from '@/app/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -57,7 +54,6 @@ const ROLE_DOCUMENTS: Record<string, Record<string, DocDef[]>> = {
       { code: 'DOC-MH01', label: 'Nursing Degree (BSc / Diploma)', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Certified copy of your nursing qualification.' },
       { code: 'DOC-MH02', label: 'Nursing License / Registration', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Active practice license from home country board.' },
       { code: 'DOC-MH03', label: 'BLS / ACLS Certification', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Basic/Advanced Life Support certification.' },
-      { code: 'DOC-MH04', label: 'Internship Completion Letter', isCompulsory: false, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Proof of completed clinical internship.' },
     ],
     "Pharmacy": [
       { code: 'DOC-MH06', label: 'B.Pharm / PharmD Degree', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Official pharmacy degree certificate.' },
@@ -128,7 +124,6 @@ export default function ApplicationFormPage() {
   });
 
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, { name: string; size: number; code: string }>>({});
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const { toast } = useToast();
   const router = useRouter();
@@ -390,7 +385,7 @@ export default function ApplicationFormPage() {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {docRequirements.base.map((doc) => (
-                          <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} inputRef={(el) => fileInputRefs.current[doc.code] = el} />
+                          <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
                         ))}
                       </div>
                     </div>
@@ -404,7 +399,7 @@ export default function ApplicationFormPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {docRequirements.role.map((doc) => (
-                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} inputRef={(el) => fileInputRefs.current[doc.code] = el} />
+                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
                           ))}
                         </div>
                       </div>
@@ -419,7 +414,7 @@ export default function ApplicationFormPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {docRequirements.country.map((doc) => (
-                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} inputRef={(el) => fileInputRefs.current[doc.code] = el} />
+                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
                           ))}
                         </div>
                       </div>
@@ -528,7 +523,9 @@ export default function ApplicationFormPage() {
   );
 }
 
-function UploadCard({ doc, uploadedFile, onUpload, onRemove, inputRef }: { doc: DocDef, uploadedFile: any, onUpload: (e: any) => void, onRemove: () => void, inputRef: any }) {
+function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, uploadedFile: any, onUpload: (e: any) => void, onRemove: () => void }) {
+  const internalRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className={`border p-5 rounded-sm transition-all group relative ${uploadedFile ? 'border-secondary bg-secondary/5' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
       <div className="flex items-center justify-between mb-3">
@@ -557,14 +554,14 @@ function UploadCard({ doc, uploadedFile, onUpload, onRemove, inputRef }: { doc: 
       ) : (
         <div 
           className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-100 bg-gray-50/50 rounded-sm hover:bg-gray-100 hover:border-secondary/30 transition-all cursor-pointer"
-          onClick={() => (inputRef as any).click()}
+          onClick={() => internalRef.current?.click()}
         >
           <UploadCloud className="w-6 h-6 text-gray-300 group-hover:text-secondary transition-colors" />
           <div className="text-center">
             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Select {doc.formats.join('/')}</p>
             <p className="text-[7px] text-gray-400 uppercase mt-1">MAX {doc.maxSizeMB}MB</p>
           </div>
-          <input type="file" className="hidden" accept={doc.formats.map(f => `.${f.toLowerCase()}`).join(',')} ref={inputRef as any} onChange={onUpload} />
+          <input type="file" className="hidden" accept={doc.formats.map(f => `.${f.toLowerCase()}`).join(',')} ref={internalRef} onChange={onUpload} />
         </div>
       )}
     </div>
