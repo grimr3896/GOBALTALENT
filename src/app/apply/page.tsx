@@ -123,7 +123,7 @@ export default function ApplicationFormPage() {
     availability: '',
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, { name: string; size: number; code: string }>>({});
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, { name: string; size: number; code: string; label: string }>>({});
 
   const { toast } = useToast();
   const router = useRouter();
@@ -164,10 +164,7 @@ export default function ApplicationFormPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = (doc: DocDef, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileUpload = (doc: DocDef, file: File) => {
     // Type Check
     const ext = file.name.split('.').pop()?.toUpperCase() || '';
     if (!doc.formats.includes(ext)) {
@@ -183,7 +180,7 @@ export default function ApplicationFormPage() {
 
     setUploadedFiles(prev => ({
       ...prev,
-      [doc.code]: { name: file.name, size: file.size, code: doc.code }
+      [doc.code]: { name: file.name, size: file.size, code: doc.code, label: doc.label }
     }));
 
     toast({ title: "Document Prepared", description: `${doc.label} is ready for submission.` });
@@ -215,22 +212,33 @@ export default function ApplicationFormPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const fileListStr = Object.values(uploadedFiles).map(f => `• ${f.name}`).join('\n');
-    const subject = encodeURIComponent(`GT Submission: ${formData.fullName} - ${formData.role}`);
+    const fileListStr = Object.values(uploadedFiles)
+      .map(f => `[${f.code}] ${f.label}: ${f.name}`)
+      .join('\n');
+    
+    const subject = encodeURIComponent(`GT OFFICIAL APPLICATION: ${formData.fullName} - ${formData.role}`);
+    
     const body = encodeURIComponent(
-      `GLOBAL TALENT OFFICIAL APPLICATION\n` +
-      `-----------------------------------\n\n` +
-      `PERSONAL:\n` +
+      `GLOBAL TALENT INTERNATIONAL CAREERS PORTAL\n` +
+      `OFFICIAL SUBMISSION MANIFEST\n` +
+      `-------------------------------------------\n\n` +
+      `PERSONAL DETAILS:\n` +
       `Full Name: ${formData.fullName}\n` +
       `Email: ${formData.email}\n` +
-      `Nationality: ${formData.nationality}\n\n` +
-      `ROLE CHOICE:\n` +
-      `Role: ${formData.role} (${formData.category})\n` +
-      `Destination: ${formData.country}\n\n` +
-      `PREPARED DOCUMENTS:\n` +
+      `Nationality: ${formData.nationality}\n` +
+      `Highest Education: ${formData.education}\n\n` +
+      `JOB CHOICE:\n` +
+      `Destination: ${formData.country}\n` +
+      `Role: ${formData.role} (Category: ${formData.category})\n\n` +
+      `DIGITALLY PREPARED DOCUMENTS CHECKLIST:\n` +
       `${fileListStr}\n\n` +
-      `-----------------------------------\n` +
-      `IMPORTANT: YOU MUST ATTACH THE PREPARED PDF/IMAGE FILES TO THIS EMAIL BEFORE SENDING.`
+      `-------------------------------------------\n` +
+      `INSTRUCTIONS TO APPLICANT:\n` +
+      `1. Your email client has been opened with this manifest.\n` +
+      `2. You MUST now manually attach the ${Object.keys(uploadedFiles).length} files listed above from your device.\n` +
+      `3. Click 'Send' once all files are attached.\n\n` +
+      `CONFIRMATION:\n` +
+      `I, ${formData.fullName}, confirm that all information and attached documents are authentic.`
     );
 
     const mailtoUrl = `mailto:globalcareers0@gmail.com?subject=${subject}&body=${body}`;
@@ -238,7 +246,10 @@ export default function ApplicationFormPage() {
     setTimeout(() => {
       setIsSubmitting(false);
       window.location.href = mailtoUrl;
-      toast({ title: "Final Step", description: "Email client opened. Attach your files and click 'Send'." });
+      toast({ 
+        title: "Manifest Generated", 
+        description: "Email client opened. PLEASE ATTACH YOUR FILES and click 'Send'." 
+      });
     }, 1500);
   };
 
@@ -308,7 +319,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Nationality *</label>
-                      <Select onValueChange={(val) => handleSelectChange('nationality', val)} required>
+                      <Select value={formData.nationality} onValueChange={(val) => handleSelectChange('nationality', val)}>
                         <SelectTrigger><SelectValue placeholder="Select Nationality" /></SelectTrigger>
                         <SelectContent>
                           {COUNTRIES.map(c => <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>)}
@@ -326,7 +337,7 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Highest Education *</label>
-                      <Select onValueChange={(val) => handleSelectChange('education', val)} required>
+                      <Select value={formData.education} onValueChange={(val) => handleSelectChange('education', val)}>
                         <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="diploma">Diploma</SelectItem>
@@ -347,7 +358,7 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Destination Country *</label>
-                      <Select value={formData.country} onValueChange={(val) => handleSelectChange('country', val)} required>
+                      <Select value={formData.country} onValueChange={(val) => handleSelectChange('country', val)}>
                         <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
                         <SelectContent>
                           {COUNTRIES.map(c => <SelectItem key={c.code} value={c.name}>{c.flag} {c.name}</SelectItem>)}
@@ -356,7 +367,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Industry Category *</label>
-                      <Select value={formData.category} onValueChange={(val) => setFormData(prev => ({ ...prev, category: val, role: '' }))} required>
+                      <Select value={formData.category} onValueChange={(val) => setFormData(prev => ({ ...prev, category: val, role: '' }))}>
                         <SelectTrigger><SelectValue placeholder="Select Industry" /></SelectTrigger>
                         <SelectContent>
                           {CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
@@ -365,7 +376,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Specific Role *</label>
-                      <Select value={formData.role} onValueChange={(val) => handleSelectChange('role', val)} disabled={!formData.category} required>
+                      <Select value={formData.role} onValueChange={(val) => handleSelectChange('role', val)} disabled={!formData.category}>
                         <SelectTrigger><SelectValue placeholder={formData.category ? "Select Role" : "Select Category First"} /></SelectTrigger>
                         <SelectContent>
                           {roles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
@@ -385,7 +396,7 @@ export default function ApplicationFormPage() {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {docRequirements.base.map((doc) => (
-                          <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
+                          <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
                         ))}
                       </div>
                     </div>
@@ -399,7 +410,7 @@ export default function ApplicationFormPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {docRequirements.role.map((doc) => (
-                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
+                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
                           ))}
                         </div>
                       </div>
@@ -414,7 +425,7 @@ export default function ApplicationFormPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {docRequirements.country.map((doc) => (
-                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(e) => handleFileUpload(doc, e)} onRemove={() => removeFile(doc.code)} />
+                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
                           ))}
                         </div>
                       </div>
@@ -477,25 +488,9 @@ export default function ApplicationFormPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <ChecklistSection 
-                    title="Base Layer" 
-                    items={docRequirements.base} 
-                    uploaded={uploadedFiles} 
-                  />
-                  {docRequirements.role.length > 0 && (
-                    <ChecklistSection 
-                      title="Role Layer" 
-                      items={docRequirements.role} 
-                      uploaded={uploadedFiles} 
-                    />
-                  )}
-                  {docRequirements.country.length > 0 && (
-                    <ChecklistSection 
-                      title="Country Layer" 
-                      items={docRequirements.country} 
-                      uploaded={uploadedFiles} 
-                    />
-                  )}
+                  <ChecklistSection title="Base Layer" items={docRequirements.base} uploaded={uploadedFiles} />
+                  {docRequirements.role.length > 0 && <ChecklistSection title="Role Layer" items={docRequirements.role} uploaded={uploadedFiles} />}
+                  {docRequirements.country.length > 0 && <ChecklistSection title="Country Layer" items={docRequirements.country} uploaded={uploadedFiles} />}
                 </div>
 
                 {!stats.isComplete && step === 4 && (
@@ -523,8 +518,8 @@ export default function ApplicationFormPage() {
   );
 }
 
-function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, uploadedFile: any, onUpload: (e: any) => void, onRemove: () => void }) {
-  const internalRef = useRef<HTMLInputElement>(null);
+function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, uploadedFile: any, onUpload: (file: File) => void, onRemove: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className={`border p-5 rounded-sm transition-all group relative ${uploadedFile ? 'border-secondary bg-secondary/5' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
@@ -535,7 +530,7 @@ function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, up
         </div>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger><Info className="w-3.5 h-3.5 text-gray-300 hover:text-secondary" /></TooltipTrigger>
+            <TooltipTrigger asChild><Info className="w-3.5 h-3.5 text-gray-300 hover:text-secondary cursor-help" /></TooltipTrigger>
             <TooltipContent className="bg-primary text-white text-[10px] uppercase font-bold p-3 border-none rounded-none shadow-xl">
               <p className="max-w-[200px] leading-relaxed">{doc.tooltip}</p>
             </TooltipContent>
@@ -549,19 +544,28 @@ function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, up
             <FileText className="w-4 h-4 text-secondary shrink-0" />
             <span className="text-[9px] font-bold text-primary truncate">{uploadedFile.name}</span>
           </div>
-          <button onClick={onRemove} className="text-red-500 hover:text-red-700 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
+          <button type="button" onClick={onRemove} className="text-red-500 hover:text-red-700 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
       ) : (
         <div 
           className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-100 bg-gray-50/50 rounded-sm hover:bg-gray-100 hover:border-secondary/30 transition-all cursor-pointer"
-          onClick={() => internalRef.current?.click()}
+          onClick={() => inputRef.current?.click()}
         >
           <UploadCloud className="w-6 h-6 text-gray-300 group-hover:text-secondary transition-colors" />
           <div className="text-center">
             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Select {doc.formats.join('/')}</p>
             <p className="text-[7px] text-gray-400 uppercase mt-1">MAX {doc.maxSizeMB}MB</p>
           </div>
-          <input type="file" className="hidden" accept={doc.formats.map(f => `.${f.toLowerCase()}`).join(',')} ref={internalRef} onChange={onUpload} />
+          <input 
+            type="file" 
+            className="hidden" 
+            ref={inputRef}
+            accept={doc.formats.map(f => `.${f.toLowerCase()}`).join(',')}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onUpload(file);
+            }} 
+          />
         </div>
       )}
     </div>
