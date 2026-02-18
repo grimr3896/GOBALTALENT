@@ -1,18 +1,22 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShieldCheck, User, Briefcase, Globe, FileUp, CheckSquare, Loader2, HelpCircle, Save } from 'lucide-react';
-import { COUNTRIES, CATEGORIES, CATEGORY_ROLES } from '@/app/lib/data';
+import { ShieldCheck, User, Briefcase, Globe, FileUp, CheckSquare, Loader2, HelpCircle, FileText, Trash2 } from 'lucide-react';
+import { COUNTRIES, CATEGORIES, CATEGORY_ROLES, MOCK_JOBS } from '@/app/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function ApplicationFormPage() {
+  const searchParams = useSearchParams();
+  const initialJobId = searchParams.get('jobId');
+  const initialJob = MOCK_JOBS.find(j => j.id === initialJobId);
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,11 +32,15 @@ export default function ApplicationFormPage() {
     experience: '',
     status: '',
     skills: '',
-    category: '',
-    role: '',
-    country: '',
+    category: initialJob?.category || '',
+    role: initialJob?.role || '',
+    country: initialJob?.country || '',
     availability: '',
   });
+
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, { name: string; size: number }>>({});
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
   const { toast } = useToast();
   const router = useRouter();
 
@@ -48,9 +56,74 @@ export default function ApplicationFormPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileUpload = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({ variant: 'destructive', title: "Invalid File Type", description: "Only PDF documents are accepted." });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: "File Too Large", description: "Maximum file size is 10MB." });
+      return;
+    }
+
+    setUploadedFiles(prev => ({
+      ...prev,
+      [docName]: { name: file.name, size: file.size }
+    }));
+
+    toast({ title: "Document Ready", description: `${docName} has been digitally prepared for your application.` });
+  };
+
+  const removeFile = (docName: string) => {
+    setUploadedFiles(prev => {
+      const next = { ...prev };
+      delete next[docName];
+      return next;
+    });
+  };
+
+  const selectedJob = useMemo(() => {
+    return MOCK_JOBS.find(j => 
+      j.category === formData.category && 
+      j.role === formData.role && 
+      j.country === formData.country
+    );
+  }, [formData.category, formData.role, formData.country]);
+
+  const requiredDocs = useMemo(() => {
+    const defaultDocs = [
+      "International Passport",
+      "National ID Card",
+      "Professional CV",
+      "Academic Degree",
+      "Medical Fitness",
+      "Police Clearance"
+    ];
+    return selectedJob?.requiredDocuments || defaultDocs;
+  }, [selectedJob]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verification check for files
+    const missingDocs = requiredDocs.filter(doc => !uploadedFiles[doc]);
+    if (missingDocs.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: "Missing Documents",
+        description: `Please upload all required files: ${missingDocs.join(', ')}`
+      });
+      setStep(4);
+      return;
+    }
+
     setIsSubmitting(true);
+
+    const fileListStr = Object.values(uploadedFiles).map(f => `• ${f.name}`).join('\n');
 
     const subject = encodeURIComponent(`Job Application: ${formData.fullName} - ${formData.role}`);
     const body = encodeURIComponent(
@@ -73,10 +146,12 @@ export default function ApplicationFormPage() {
       `Specific Role: ${formData.role}\n` +
       `Target Country: ${formData.country}\n` +
       `Availability: ${formData.availability}\n\n` +
+      `DIGITALLY PREPARED DOCUMENTS:\n` +
+      `${fileListStr}\n\n` +
       `SKILLS SUMMARY:\n` +
       `${formData.skills}\n\n` +
       `-----------------------------------\n` +
-      `IMPORTANT INSTRUCTION: PLEASE ATTACH ALL REQUIRED DOCUMENTS (PASSPORT, CV, CERTIFICATES) TO THIS EMAIL BEFORE PRESSING SEND.`
+      `IMPORTANT INSTRUCTION: PLEASE ATTACH THE PREPARED PDF FILES LISTED ABOVE TO THIS EMAIL BEFORE PRESSING SEND.`
     );
 
     const mailtoUrl = `mailto:globalcareers0@gmail.com?subject=${subject}&body=${body}`;
@@ -86,7 +161,7 @@ export default function ApplicationFormPage() {
       window.location.href = mailtoUrl;
       toast({
         title: "Final Step Required",
-        description: "Your email client has been opened. Please attach your documents and click 'Send' to complete the application."
+        description: "Your email client has been opened. Please attach your PDF documents and click 'Send' to complete the application."
       });
     }, 1500);
   };
@@ -242,7 +317,11 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Destination Country *</label>
-                      <Select onValueChange={(val) => handleSelectChange('country', val)} required>
+                      <Select 
+                        value={formData.country}
+                        onValueChange={(val) => handleSelectChange('country', val)} 
+                        required
+                      >
                         <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
                         <SelectContent>
                           {COUNTRIES.map(c => <SelectItem key={c.code} value={c.name}>{c.flag} {c.name}</SelectItem>)}
@@ -252,6 +331,7 @@ export default function ApplicationFormPage() {
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Job Category *</label>
                       <Select 
+                        value={formData.category}
                         required 
                         onValueChange={(val) => setFormData(prev => ({ ...prev, category: val, role: '' }))}
                       >
@@ -264,6 +344,7 @@ export default function ApplicationFormPage() {
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Specific Role *</label>
                       <Select 
+                        value={formData.role}
                         required 
                         disabled={!formData.category}
                         onValueChange={(val) => handleSelectChange('role', val)}
@@ -292,26 +373,61 @@ export default function ApplicationFormPage() {
                 {step === 4 && (
                   <div className="space-y-8">
                     <div className="p-6 bg-secondary/10 border border-secondary/30 rounded-sm mb-6">
-                      <p className="text-sm font-bold text-primary uppercase mb-2">Notice to Applicant</p>
-                      <p className="text-xs text-gray-600 leading-relaxed">Please prepare the following documents. You will be prompted to attach them to the final application email in the next step.</p>
+                      <p className="text-sm font-bold text-primary uppercase mb-2">Required Documentation Upload</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        Please upload the following required documents in <strong>PDF format</strong>. 
+                        Your uploads will be listed in your final application email.
+                      </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[
-                        "International Passport",
-                        "National ID Card",
-                        "Professional CV",
-                        "Academic Degree",
-                        "Medical Fitness",
-                        "Police Clearance"
-                      ].map((doc, idx) => (
-                        <div key={idx} className="border border-gray-100 p-4 rounded-sm bg-gray-50/50">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {requiredDocs.map((doc, idx) => (
+                        <div key={idx} className="border border-gray-100 p-5 rounded-sm bg-gray-50/50 flex flex-col gap-3">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-[10px] font-bold uppercase text-primary mb-1">{doc} *</p>
-                              <p className="text-[9px] text-gray-400 uppercase tracking-tighter">Status: Required for Email Attachment</p>
-                            </div>
-                            <CheckSquare className="w-4 h-4 text-secondary" />
+                            <p className="text-[10px] font-bold uppercase text-primary mb-1">{doc} *</p>
+                            {uploadedFiles[doc] ? (
+                              <CheckSquare className="w-4 h-4 text-secondary" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-gray-300" />
+                            )}
                           </div>
+                          
+                          {uploadedFiles[doc] ? (
+                            <div className="flex items-center justify-between p-2 bg-white border border-secondary/30 rounded-sm">
+                              <span className="text-[9px] font-bold text-secondary truncate max-w-[150px]">
+                                {uploadedFiles[doc].name}
+                              </span>
+                              <button 
+                                type="button" 
+                                onClick={() => removeFile(doc)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-2">
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                accept="application/pdf"
+                                ref={el => fileInputRefs.current[doc] = el}
+                                onChange={(e) => handleFileUpload(doc, e)}
+                              />
+                              <Button 
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRefs.current[doc]?.click()}
+                                className="w-full text-[9px] h-8 border-dashed border-primary/20 bg-white"
+                              >
+                                Upload PDF Document
+                              </Button>
+                            </div>
+                          )}
+                          <p className="text-[8px] text-gray-400 uppercase tracking-tighter">
+                            Status: {uploadedFiles[doc] ? 'Digitally Prepared' : 'Required for Attachment'}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -322,12 +438,13 @@ export default function ApplicationFormPage() {
                   <div className="space-y-8 max-w-2xl mx-auto">
                     <div className="p-8 border-l-4 border-secondary bg-gray-50 italic text-sm text-gray-700 leading-relaxed font-serif relative">
                       <ShieldCheck className="absolute top-2 right-2 w-12 h-12 text-secondary/10" />
-                      "I hereby declare that the particulars given by me are true in all respects and that I have not suppressed or misrepresented any facts. I understand that pressing the button below will generate a pre-composed email which I must send along with my documents."
+                      "I hereby declare that the particulars given by me are true in all respects and that I have not suppressed or misrepresented any facts. I understand that pressing the button below will generate a pre-composed email. I MUST manually attach the PDF files I uploaded in Step 4 to this email before sending."
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-gray-100">
                       {[
                         "I confirm all information is true and accurate",
+                        "I have prepared all required PDF documents",
                         "I agree to Terms & Conditions and Privacy Policy",
                         "I consent to background verification"
                       ].map((text, idx) => (
@@ -385,15 +502,15 @@ export default function ApplicationFormPage() {
               </h3>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">How do I send my documents?</AccordionTrigger>
+                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">Why do I need to upload PDFs?</AccordionTrigger>
                   <AccordionContent className="text-[10px] text-gray-500 leading-relaxed uppercase">
-                    After clicking submit, your email app will open. You must manually attach your Passport, CV, and other required documents to that email.
+                    Our system verifies that you have the correct documentation for the {formData.role || 'selected'} role before generating your official application record.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">What if my email client doesn't open?</AccordionTrigger>
+                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">How do I attach the files?</AccordionTrigger>
                   <AccordionContent className="text-[10px] text-gray-500 leading-relaxed uppercase">
-                    You can manually send your application details and documents to globalcareers0@gmail.com with the subject: "Job Application: [Your Name]".
+                    After clicking submit, your email app will open. You must manually select and attach the PDF files you chose in Step 4 to that email before clicking 'Send'.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
