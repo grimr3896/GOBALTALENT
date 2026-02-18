@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { MOCK_JOBS, CATEGORIES, COUNTRIES } from '@/app/lib/data';
-import { Search, Filter, MapPin, DollarSign, Clock, Calendar, ArrowRight } from 'lucide-react';
+import { Search, Filter, MapPin, DollarSign, Clock, Calendar, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,16 +14,51 @@ export default function JobsListingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState('all');
+  const [selectedExperience, setSelectedExperience] = useState('all');
 
   const filteredJobs = useMemo(() => {
     return MOCK_JOBS.filter(job => {
-      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           job.description.toLowerCase().includes(searchTerm.toLowerCase());
+      // Search matching (Title, Description, Category, Role)
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        job.title.toLowerCase().includes(searchLower) || 
+        job.description.toLowerCase().includes(searchLower) ||
+        job.category.toLowerCase().includes(searchLower) ||
+        job.role.toLowerCase().includes(searchLower);
+
+      // Category matching
       const matchesCategory = selectedCategory === 'all' || job.category === selectedCategory;
+
+      // Country matching
       const matchesCountry = selectedCountry === 'all' || job.country === selectedCountry;
-      return matchesSearch && matchesCategory && matchesCountry;
+
+      // Experience level matching logic
+      let matchesExperience = true;
+      if (selectedExperience !== 'all') {
+        const yearsMatch = job.experience.match(/\d+/);
+        const years = yearsMatch ? parseInt(yearsMatch[0]) : 0;
+        
+        if (selectedExperience === 'entry') {
+          matchesExperience = years <= 2;
+        } else if (selectedExperience === 'mid') {
+          matchesExperience = years > 2 && years <= 5;
+        } else if (selectedExperience === 'senior') {
+          matchesExperience = years >= 5;
+        }
+      }
+
+      return matchesSearch && matchesCategory && matchesCountry && matchesExperience;
     });
-  }, [searchTerm, selectedCategory, selectedCountry]);
+  }, [searchTerm, selectedCategory, selectedCountry, selectedExperience]);
+
+  const hasActiveFilters = searchTerm !== '' || selectedCategory !== 'all' || selectedCountry !== 'all' || selectedExperience !== 'all';
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedCountry('all');
+    setSelectedExperience('all');
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
@@ -54,15 +89,25 @@ export default function JobsListingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Filters */}
           <aside className="space-y-6">
-            <div className="bg-white p-6 border border-gray-200 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
-                <Filter className="w-4 h-4 text-secondary" /> Filter Options
-              </h3>
+            <div className="bg-white p-6 border border-gray-200 shadow-sm sticky top-24">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-secondary" /> Filter Options
+                </h3>
+                {hasActiveFilters && (
+                  <button 
+                    onClick={clearFilters}
+                    className="text-[10px] font-bold uppercase text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors"
+                  >
+                    <X className="w-3 h-3" /> Clear
+                  </button>
+                )}
+              </div>
               
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase text-gray-500">Industry Category</label>
-                  <Select onValueChange={setSelectedCategory} defaultValue="all">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
@@ -77,7 +122,7 @@ export default function JobsListingPage() {
 
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase text-gray-500">Destination Country</label>
-                  <Select onValueChange={setSelectedCountry} defaultValue="all">
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="All Countries" />
                     </SelectTrigger>
@@ -92,7 +137,7 @@ export default function JobsListingPage() {
 
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase text-gray-500">Experience Level</label>
-                  <Select defaultValue="all">
+                  <Select value={selectedExperience} onValueChange={setSelectedExperience}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Any Experience" />
                     </SelectTrigger>
@@ -109,7 +154,9 @@ export default function JobsListingPage() {
               <div className="mt-10 p-4 bg-gray-50 border border-secondary/20 rounded">
                 <p className="text-[10px] text-gray-500 uppercase font-bold leading-tight">Need help?</p>
                 <p className="text-xs mt-1">Our career consultants are available to guide you.</p>
-                <Button variant="link" className="p-0 h-auto text-xs text-secondary font-bold uppercase mt-2">Contact Advisor</Button>
+                <Button variant="link" className="p-0 h-auto text-xs text-secondary font-bold uppercase mt-2" asChild>
+                  <Link href="/contact">Contact Advisor</Link>
+                </Button>
               </div>
             </div>
           </aside>
@@ -181,7 +228,7 @@ export default function JobsListingPage() {
                 <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                 <h3 className="text-xl font-headline font-bold text-primary">No positions found</h3>
                 <p className="text-gray-500 mt-2">Try adjusting your search terms or filters.</p>
-                <Button variant="link" onClick={() => { setSearchTerm(''); setSelectedCategory('all'); setSelectedCountry('all'); }} className="mt-4 text-secondary font-bold uppercase tracking-widest">Clear All Filters</Button>
+                <Button variant="link" onClick={clearFilters} className="mt-4 text-secondary font-bold uppercase tracking-widest">Clear All Filters</Button>
               </div>
             )}
           </main>
