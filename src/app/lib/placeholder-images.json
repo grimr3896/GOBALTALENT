@@ -1,0 +1,41 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "healthcare",
+      "description": "Modern healthcare facility",
+      "imageUrl": "https://picsum.photos/seed/healthcare/600/400",
+      "imageHint": "hospital professional"
+    },
+    {
+      "id": "engineering",
+      "description": "High-tech engineering lab",
+      "imageUrl": "https://picsum.photos/seed/engineering/600/400",
+      "imageHint": "engineering technology"
+    },
+    {
+      "id": "construction",
+      "description": "Construction site progress",
+      "imageUrl": "https://picsum.photos/seed/construction/600/400",
+      "imageHint": "construction building"
+    },
+    {
+      "id": "it",
+      "description": "Modern IT office",
+      "imageUrl": "https://picsum.photos/seed/it/600/400",
+      "imageHint": "coding office"
+    },
+    {
+      "id": "education",
+      "description": "Global classroom setting",
+      "imageUrl": "https://picsum.photos/seed/edu/600/400",
+      "imageHint": "classroom teacher"
+    },
+    {
+      "id": "hero",
+      "description": "Global business professionals",
+      "imageUrl": "https://picsum.photos/seed/global/1920/1080",
+      "imageHint": "business global"
+    }
+  ]
+}
