@@ -388,48 +388,50 @@ export default function ApplicationFormPage() {
 
                 {step === 4 && (
                   <div className="space-y-12">
-                    {/* A: Base Documents */}
-                    <div>
-                      <div className="flex items-center gap-3 border-b-2 border-gray-100 pb-2 mb-6">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-primary">A. Base Documents (Compulsory)</h3>
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-red-600 border-red-200">7 Required</Badge>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {docRequirements.base.map((doc) => (
-                          <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* B: Role-Specific Documents */}
-                    {docRequirements.role.length > 0 && (
+                    <TooltipProvider>
+                      {/* A: Base Documents */}
                       <div>
                         <div className="flex items-center gap-3 border-b-2 border-gray-100 pb-2 mb-6">
-                          <h3 className="text-sm font-bold uppercase tracking-widest text-primary">B. {formData.role} Requirements</h3>
-                          <Badge variant="outline" className="text-[10px] uppercase font-bold text-secondary border-secondary/30">{docRequirements.role.length} Items</Badge>
+                          <h3 className="text-sm font-bold uppercase tracking-widest text-primary">A. Base Documents (Compulsory)</h3>
+                          <Badge variant="outline" className="text-[10px] uppercase font-bold text-red-600 border-red-200">7 Required</Badge>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {docRequirements.role.map((doc) => (
+                          {docRequirements.base.map((doc) => (
                             <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
                           ))}
                         </div>
                       </div>
-                    )}
 
-                    {/* C: Country Requirements */}
-                    {docRequirements.country.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-3 border-b-2 border-gray-100 pb-2 mb-6">
-                          <h3 className="text-sm font-bold uppercase tracking-widest text-primary">C. {formData.country} Compliance</h3>
-                          <Badge variant="outline" className="text-[10px] uppercase font-bold text-blue-600 border-blue-200">{docRequirements.country.length} Items</Badge>
+                      {/* B: Role-Specific Documents */}
+                      {docRequirements.role.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-3 border-b-2 border-gray-100 pb-2 mb-6">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-primary">B. {formData.role} Requirements</h3>
+                            <Badge variant="outline" className="text-[10px] uppercase font-bold text-secondary border-secondary/30">{docRequirements.role.length} Items</Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {docRequirements.role.map((doc) => (
+                              <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
+                            ))}
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {docRequirements.country.map((doc) => (
-                            <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
-                          ))}
+                      )}
+
+                      {/* C: Country Requirements */}
+                      {docRequirements.country.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-3 border-b-2 border-gray-100 pb-2 mb-6">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-primary">C. {formData.country} Compliance</h3>
+                            <Badge variant="outline" className="text-[10px] uppercase font-bold text-blue-600 border-blue-200">{docRequirements.country.length} Items</Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {docRequirements.country.map((doc) => (
+                              <UploadCard key={doc.code} doc={doc} uploadedFile={uploadedFiles[doc.code]} onUpload={(file) => handleFileUpload(doc, file)} onRemove={() => removeFile(doc.code)} />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </TooltipProvider>
                   </div>
                 )}
 
@@ -528,14 +530,12 @@ function UploadCard({ doc, uploadedFile, onUpload, onRemove }: { doc: DocDef, up
           <span className={`w-2 h-2 rounded-full ${doc.isCompulsory ? 'bg-red-500' : 'bg-yellow-500'}`} />
           <p className="text-[10px] font-bold uppercase text-primary tracking-widest truncate max-w-[180px]">{doc.label}</p>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild><Info className="w-3.5 h-3.5 text-gray-300 hover:text-secondary cursor-help" /></TooltipTrigger>
-            <TooltipContent className="bg-primary text-white text-[10px] uppercase font-bold p-3 border-none rounded-none shadow-xl">
-              <p className="max-w-[200px] leading-relaxed">{doc.tooltip}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild><Info className="w-3.5 h-3.5 text-gray-300 hover:text-secondary cursor-help" /></TooltipTrigger>
+          <TooltipContent className="bg-primary text-white text-[10px] uppercase font-bold p-3 border-none rounded-none shadow-xl">
+            <p className="max-w-[200px] leading-relaxed">{doc.tooltip}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {uploadedFile ? (
