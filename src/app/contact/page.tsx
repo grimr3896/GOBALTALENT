@@ -1,10 +1,61 @@
+'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Phone, MapPin, ShieldCheck, Clock, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldCheck, Clock, MessageSquare, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ContactPage() {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    department: '',
+    applicationId: '',
+    message: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const subject = encodeURIComponent(`GT OFFICIAL INQUIRY: ${formData.department || 'General'} - ${formData.fullName}`);
+    
+    const body = encodeURIComponent(
+      `GLOBAL TALENT INTERNATIONAL CAREERS PORTAL\n` +
+      `OFFICIAL INQUIRY MANIFEST\n` +
+      `-------------------------------------------\n\n` +
+      `SENDER DETAILS:\n` +
+      `Full Name: ${formData.fullName}\n` +
+      `Email: ${formData.email}\n` +
+      `Department: ${formData.department}\n` +
+      `Application ID: ${formData.applicationId || 'N/A'}\n\n` +
+      `MESSAGE:\n` +
+      `${formData.message}\n\n` +
+      `-------------------------------------------\n` +
+      `This inquiry was generated via the GlobalTalent Official Careers Portal.`
+    );
+
+    const mailtoUrl = `mailto:globalcareers0@gmail.com?subject=${subject}&body=${body}`;
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      window.location.href = mailtoUrl;
+      toast({ 
+        title: "Message Prepared", 
+        description: "Your email client has been opened. Please click 'Send' to transmit your inquiry." 
+      });
+    }, 1200);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
@@ -81,32 +132,75 @@ export default function ContactPage() {
               <h2 className="text-3xl font-headline font-bold text-primary mb-2">Send an Official Inquiry</h2>
               <p className="text-gray-500 mb-10 text-sm">Please fill out the form below and an officer will respond within 24-48 business hours.</p>
 
-              <form className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400">Your Full Name *</label>
-                    <Input placeholder="Enter legal name" className="rounded-none border-gray-200 h-12" />
+                    <Input 
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      placeholder="Enter legal name" 
+                      className="rounded-none border-gray-200 h-12" 
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400">Email Address *</label>
-                    <Input type="email" placeholder="example@domain.com" className="rounded-none border-gray-200 h-12" />
+                    <Input 
+                      name="email"
+                      type="email" 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="example@domain.com" 
+                      className="rounded-none border-gray-200 h-12" 
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400">Inquiry Department *</label>
-                    <Input placeholder="e.g. Healthcare Recruitment, IT Placements" className="rounded-none border-gray-200 h-12" />
+                    <Input 
+                      name="department"
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      placeholder="e.g. Healthcare Recruitment, IT Placements" 
+                      className="rounded-none border-gray-200 h-12" 
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400">Application ID (If any)</label>
-                    <Input placeholder="GT-2025-XXXX" className="rounded-none border-gray-200 h-12" />
+                    <Input 
+                      name="applicationId"
+                      value={formData.applicationId}
+                      onChange={handleInputChange}
+                      placeholder="GT-2025-XXXX" 
+                      className="rounded-none border-gray-200 h-12" 
+                    />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400">Your Message *</label>
-                    <Textarea placeholder="Detail your inquiry here..." className="rounded-none border-gray-200 min-h-[160px]" />
+                    <Textarea 
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Detail your inquiry here..." 
+                      className="rounded-none border-gray-200 min-h-[160px]" 
+                      required
+                    />
                   </div>
                 </div>
                 <div className="pt-4">
-                  <Button className="w-full bg-primary text-secondary font-bold uppercase tracking-[0.2em] h-14 rounded-none hover:bg-primary/95 text-sm shadow-xl transition-all">
-                    Transmit Message Securely
+                  <Button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary text-secondary font-bold uppercase tracking-[0.2em] h-14 rounded-none hover:bg-primary/95 text-sm shadow-xl transition-all"
+                  >
+                    {isSubmitting ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Preparing Transmission...</>
+                    ) : (
+                      "Transmit Message Securely"
+                    )}
                   </Button>
                 </div>
               </form>
