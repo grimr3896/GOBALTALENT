@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShieldCheck, User, Briefcase, Globe, FileUp, CheckSquare, Loader2, HelpCircle, FileText, Trash2 } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, Globe, FileUp, CheckSquare, Loader2, HelpCircle, FileText, Trash2, AlertCircle, UploadCloud } from 'lucide-react';
 import { COUNTRIES, CATEGORIES, CATEGORY_ROLES, MOCK_JOBS } from '@/app/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -95,15 +95,25 @@ export default function ApplicationFormPage() {
   }, [formData.category, formData.role, formData.country]);
 
   const requiredDocs = useMemo(() => {
-    const defaultDocs = [
-      "International Passport",
-      "National ID Card",
-      "Professional CV",
-      "Academic Degree",
-      "Medical Fitness",
-      "Police Clearance"
+    // Compulsory Base Documents requested by the user
+    const baseDocs = [
+      "Passport (valid 6+ months)",
+      "National ID",
+      "Birth Certificate",
+      "Updated CV",
+      "Passport-size Photo",
+      "Police Clearance Certificate"
     ];
-    return selectedJob?.requiredDocuments || defaultDocs;
+
+    // Merge with any job-specific ones if they don't overlap
+    const jobSpecificDocs = selectedJob?.requiredDocuments || [];
+    const normalizedBase = baseDocs.map(d => d.toLowerCase());
+    
+    const extraDocs = jobSpecificDocs.filter(jd => 
+      !normalizedBase.some(nb => jd.toLowerCase().includes(nb) || nb.includes(jd.toLowerCase()))
+    );
+
+    return [...baseDocs, ...extraDocs];
   }, [selectedJob]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -115,7 +125,7 @@ export default function ApplicationFormPage() {
       toast({
         variant: 'destructive',
         title: "Missing Documents",
-        description: `Please upload all required files: ${missingDocs.join(', ')}`
+        description: `Please upload all compulsory documents to proceed.`
       });
       setStep(4);
       return;
@@ -148,10 +158,8 @@ export default function ApplicationFormPage() {
       `Availability: ${formData.availability}\n\n` +
       `DIGITALLY PREPARED DOCUMENTS:\n` +
       `${fileListStr}\n\n` +
-      `SKILLS SUMMARY:\n` +
-      `${formData.skills}\n\n` +
       `-----------------------------------\n` +
-      `IMPORTANT INSTRUCTION: PLEASE ATTACH THE PREPARED PDF FILES LISTED ABOVE TO THIS EMAIL BEFORE PRESSING SEND.`
+      `IMPORTANT INSTRUCTION: YOU MUST ATTACH THE PDF FILES LISTED ABOVE TO THIS EMAIL BEFORE PRESSING SEND.`
     );
 
     const mailtoUrl = `mailto:globalcareers0@gmail.com?subject=${subject}&body=${body}`;
@@ -372,41 +380,53 @@ export default function ApplicationFormPage() {
 
                 {step === 4 && (
                   <div className="space-y-8">
-                    <div className="p-6 bg-secondary/10 border border-secondary/30 rounded-sm mb-6">
-                      <p className="text-sm font-bold text-primary uppercase mb-2">Required Documentation Upload</p>
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        Please upload the following required documents in <strong>PDF format</strong>. 
-                        Your uploads will be listed in your final application email.
+                    <div className="p-6 bg-primary text-white border-l-4 border-secondary official-seal-bg">
+                      <h3 className="text-lg font-headline font-bold mb-2">Base Documents (Compulsory)</h3>
+                      <p className="text-xs text-gray-300 leading-relaxed uppercase tracking-wider">
+                        All documents listed below are compulsory for your application to be considered. 
+                        Please upload them in <strong>PDF format</strong>.
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {requiredDocs.map((doc, idx) => (
-                        <div key={idx} className="border border-gray-100 p-5 rounded-sm bg-gray-50/50 flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-bold uppercase text-primary mb-1">{doc} *</p>
+                        <div key={idx} className="border border-gray-200 p-6 rounded-sm bg-white hover:border-secondary transition-colors group relative">
+                          <div className="flex items-center justify-between mb-4">
+                            <p className="text-[10px] font-bold uppercase text-primary tracking-widest">{doc} *</p>
                             {uploadedFiles[doc] ? (
-                              <CheckSquare className="w-4 h-4 text-secondary" />
+                              <CheckSquare className="w-5 h-5 text-secondary" />
                             ) : (
-                              <FileText className="w-4 h-4 text-gray-300" />
+                              <FileText className="w-5 h-5 text-gray-200" />
                             )}
                           </div>
                           
                           {uploadedFiles[doc] ? (
-                            <div className="flex items-center justify-between p-2 bg-white border border-secondary/30 rounded-sm">
-                              <span className="text-[9px] font-bold text-secondary truncate max-w-[150px]">
-                                {uploadedFiles[doc].name}
-                              </span>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 border border-secondary/20 rounded-sm">
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <FileText className="w-4 h-4 text-secondary shrink-0" />
+                                <span className="text-[10px] font-bold text-primary truncate">
+                                  {uploadedFiles[doc].name}
+                                </span>
+                              </div>
                               <button 
                                 type="button" 
                                 onClick={() => removeFile(doc)}
-                                className="text-red-500 hover:text-red-700"
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Remove document"
                               >
-                                <Trash2 className="w-3 h-3" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           ) : (
-                            <div className="flex flex-col gap-2">
+                            <div 
+                              className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-100 bg-gray-50/50 rounded-sm hover:bg-gray-50 hover:border-secondary/30 transition-all cursor-pointer"
+                              onClick={() => fileInputRefs.current[doc]?.click()}
+                            >
+                              <UploadCloud className="w-8 h-8 text-gray-300 group-hover:text-secondary transition-colors" />
+                              <div className="text-center">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">No file chosen</p>
+                                <p className="text-[8px] text-gray-400 uppercase mt-1">Drag & drop or click to upload PDF</p>
+                              </div>
                               <input 
                                 type="file" 
                                 className="hidden" 
@@ -414,20 +434,14 @@ export default function ApplicationFormPage() {
                                 ref={el => fileInputRefs.current[doc] = el}
                                 onChange={(e) => handleFileUpload(doc, e)}
                               />
-                              <Button 
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => fileInputRefs.current[doc]?.click()}
-                                className="w-full text-[9px] h-8 border-dashed border-primary/20 bg-white"
-                              >
-                                Upload PDF Document
-                              </Button>
                             </div>
                           )}
-                          <p className="text-[8px] text-gray-400 uppercase tracking-tighter">
-                            Status: {uploadedFiles[doc] ? 'Digitally Prepared' : 'Required for Attachment'}
-                          </p>
+                          <div className="mt-3 flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${uploadedFiles[doc] ? 'bg-secondary' : 'bg-gray-200'}`} />
+                            <p className="text-[8px] text-gray-400 uppercase tracking-widest font-bold">
+                              {uploadedFiles[doc] ? 'Digitally Prepared' : 'Required for Attachment'}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
