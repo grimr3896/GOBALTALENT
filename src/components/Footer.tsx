@@ -1,5 +1,4 @@
-
-import { ShieldCheck, Facebook, Linkedin, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { ShieldCheck, Facebook, Linkedin, Twitter, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -35,7 +34,6 @@ export default function Footer() {
           <h4 className="font-headline text-lg mb-6 border-b border-secondary/30 pb-2">Contact Details</h4>
           <ul className="space-y-4 text-sm">
             <li className="flex gap-3"><MapPin className="w-4 h-4 text-secondary shrink-0" /> 1245 Global Plaza, District 5, London, UK</li>
-            <li className="flex gap-3"><Phone className="w-4 h-4 text-secondary shrink-0" /> +44 20 7946 0958</li>
             <li className="flex gap-3"><Mail className="w-4 h-4 text-secondary shrink-0" /> info@globaltalent.gov</li>
           </ul>
         </div>
