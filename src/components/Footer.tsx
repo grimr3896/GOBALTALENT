@@ -1,4 +1,4 @@
-import { ShieldCheck, Facebook, Linkedin, Twitter, Mail, MapPin } from 'lucide-react';
+import { ShieldCheck, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -13,11 +13,6 @@ export default function Footer() {
           <p className="text-sm text-gray-400 leading-relaxed">
             Authorized international employment agency providing ethical recruitment solutions connecting global talent with world-class employers since 2010.
           </p>
-          <div className="flex gap-4 pt-2">
-            <Link href="#" className="hover:text-secondary"><Linkedin className="w-5 h-5" /></Link>
-            <Link href="#" className="hover:text-secondary"><Facebook className="w-5 h-5" /></Link>
-            <Link href="#" className="hover:text-secondary"><Twitter className="w-5 h-5" /></Link>
-          </div>
         </div>
 
         <div>
