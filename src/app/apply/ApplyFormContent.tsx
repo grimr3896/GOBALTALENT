@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
@@ -94,6 +95,22 @@ const COUNTRY_DOCUMENTS: Record<string, DocDef[]> = {
   "Canada": [
     { code: 'DOC-C14', label: 'Language Test (IELTS/CELPIP)', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Valid language test results.' },
     { code: 'DOC-C15', label: 'WES / ECA Assessment', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Educational Credential Assessment.' },
+  ],
+  "Luxembourg": [
+    { code: 'DOC-LU01', label: 'Credential Recognition (Lux)', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Recognition by Luxembourg Ministry of Education.' },
+    { code: 'DOC-LU02', label: 'Language Certificate (French/German)', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Proof of proficiency (B1+) for relevant roles.' },
+  ],
+  "Switzerland": [
+    { code: 'DOC-CH01', label: 'Swiss SERI Recognition', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Credential recognition by Swiss SERI authority.' },
+    { code: 'DOC-CH05', label: 'Criminal Record Extract', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Official Strafregisterauszug.' },
+  ],
+  "Sweden": [
+    { code: 'DOC-SE01', label: 'Swedish Language Certificate', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Proof of proficiency (B2 minimum).' },
+    { code: 'DOC-SE02', label: 'UHR Credential Evaluation', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Evaluation by Swedish Council for Higher Education.' },
+  ],
+  "Poland": [
+    { code: 'DOC-PL01', label: 'Polish Language Certificate', isCompulsory: true, formats: ['PDF'], maxSizeMB: 3, tooltip: 'Proof of proficiency (B1 minimum).' },
+    { code: 'DOC-PL02', label: 'NAWA Credential Nostrification', isCompulsory: true, formats: ['PDF'], maxSizeMB: 5, tooltip: 'Nostrification for non-EU degrees.' },
   ],
 };
 
